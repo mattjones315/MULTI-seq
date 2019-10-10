@@ -6,7 +6,6 @@
 ## classifyCells ##
 ###################
 classifyCells <- function(barTable, q) {
-  require(KernSmooth)
 
   ## Normalize Data: Log2 Transform, mean-center
   barTable.n <- as.data.frame(log2(barTable))
@@ -28,10 +27,15 @@ classifyCells <- function(barTable, q) {
   ## 3. Split maxima into low and high subsets, adjust low if necessary
   ## 4. Threshold and classify cells according to user-specified inter-maxima quantile
 
+  bad.bars = c()
   for (i in 1:n_BC) {
     ## Step 1: GKDE
-    model <- tryCatch( { approxfun(bkde(barTable.n[,i], kernel="normal")) },
-                       error=function(e) { print(paste0("No threshold found for ", colnames(barTable.n)[i],"...")) } )
+    model <- tryCatch( { 
+                  approxfun(bkde(barTable.n[,i], kernel="normal")) 
+                  }, error=function(e) { 
+                      bad.bars = c(bad.bars, names(bc_calls)[i])
+                      #print(paste0("No threshold found for ", colnames(barTable.n)[i],"..."))
+					   })
     if (class(model) == "character") { next }
     x <-  seq(from=quantile(barTable.n[,i],0.001), to=quantile(barTable.n[,i],0.999), length.out=100)
 
@@ -39,7 +43,7 @@ classifyCells <- function(barTable, q) {
     extrema <- localMaxima(model(x))
 
     if (length(extrema) <= 1) {
-      print(paste0("No threshold found for ", colnames(barTable.n)[i],"..."))
+    #  print(paste0("No threshold found for ", colnames(barTable.n)[i],"..."))
       next
     }
 
@@ -48,7 +52,7 @@ classifyCells <- function(barTable, q) {
     ## Assumes positive cells are highest extreme -- favors negatives over doublets
     low.extreme <- extrema[which.max(model(x)[extrema])]
     high.extreme <- max(extrema)
-    if (low.extreme == high.extreme) {print(paste0("No threshold found for ", colnames(barTable.n)[i],"...")) }
+    # if (low.extreme == high.extreme) {print(paste0("No threshold found for ", colnames(barTable.n)[i],"...")) }
 
     ## Step 4: Threshold and classify cells
     thresh <- quantile(c(x[high.extreme], x[low.extreme]), q)
@@ -72,7 +76,6 @@ classifyCells <- function(barTable, q) {
 ## findThresh ##
 ################
 findThresh <- function(call.list) {
-  require(reshape2)
 
   res <- as.data.frame(matrix(0L, nrow=length(call.list), ncol=4))
   colnames(res) <- c("q","pDoublet","pNegative","pSinglet")
@@ -105,6 +108,7 @@ localMaxima <- function(x) {
   rle(y)$lengths
   y <- cumsum(rle(y)$lengths)
   y <- y[seq.int(1L, length(y), 2L)]
+
   if (x[[1]] == x[[2]]) {
     y <- y[-1]
   }
@@ -115,7 +119,6 @@ localMaxima <- function(x) {
 ## findReclassCells ##
 ######################
 findReclassCells <- function(barTable, neg.cells) {
-  require(KernSmooth)
 
   ## Normalize Data: Log2 Transform, mean-center
   print("Normalizing barode data...")
@@ -292,7 +295,6 @@ rescueCells <- function(barTable, classifications, reclassifications) {
 ## barTSNE ##
 #############
 barTSNE <- function(barTable) {
-  require(Rtsne)
 
   ## Normalize barcode count matrix
   n_BC <- ncol(barTable)

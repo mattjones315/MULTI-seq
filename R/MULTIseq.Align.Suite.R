@@ -5,7 +5,6 @@
 ## 'cellIDs' is a vector of sequenced cellIDs desired for alignment; 'ref' is a vector of reference sample barcode sequences ##                                                    ##
 ###############################################################################################################################
 MULTIseq.align <- function(readTable, cellIDs, ref) {
-  require(stringdist)
 
   ## Bucket cell IDs
   print("Bucketing cell IDs...")
@@ -87,7 +86,6 @@ MULTIseq.align <- function(readTable, cellIDs, ref) {
 ## 'cellIDs' is a vector of sequenced cellIDs desired for alignment; 'ref' is a vector of reference sample barcode sequences    ##                                                    ##
 ##################################################################################################################################
 MULTIseq.align_BD <- function(readTable, cellIDs, ref) {
-  require(stringdist)
 
   ## Bucket cell IDs
   print("Bucketing cell IDs...")
@@ -212,7 +210,6 @@ bucket_readTable <- function(readTable, cellIDs_bucketed) {
 ## 'R1' is an R1 FASTQ file; 'R2' is an R2 FASTQ file; 'cellIDs' is a character vecotro of cellIDs     ##
 #########################################################################################################
 MULTIseq.preProcess <- function(R1, R2, cellIDs, cell=c(1,16), umi=c(17,28), tag=c(1,8)) {
-  require(ShortRead)
 
   print("Reading in R1...")
   r1 <- readFastq(R1)
@@ -240,7 +237,6 @@ MULTIseq.preProcess <- function(R1, R2, cellIDs, cell=c(1,16), umi=c(17,28), tag
 ## 'R1' is an R1 FASTQ file; 'R2' is an R2 FASTQ file; 'cellIDs' is the 10X cell barcode whitelist     ##
 #########################################################################################################
 MULTIseq.preProcess_allCells <- function(R1, R2, whitelist, cell=c(1,16), umi=c(17,28), tag=c(1,8)) {
-  require(ShortRead)
 
   print("Reading in R1...")
   r1 <- readFastq(R1)
@@ -294,7 +290,6 @@ MULTIseq.preProcess_allCells <- function(R1, R2, whitelist, cell=c(1,16), umi=c(
 ## 'alignRate' computes the proportion of reads that align to the reference ##
 ##############################################################################
 alignRate <- function(readTable, cellIDs, ref) {
-  require(stringdist)
 
   print("Subsetting readTable...")
   ind <- which(readTable$Cell %in% cellIDs)
