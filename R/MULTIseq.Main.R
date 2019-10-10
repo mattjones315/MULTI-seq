@@ -77,6 +77,8 @@ analyze_multi_sample <- function(bar.ref, cell.id.vec, R1, R2, cell.pos = c(1,16
     bar.table.n = bar.table[,1:96]
     bar.table.n = apply(bar.table.n, c(1,2), log1p)
 
+    tsne.res = as.data.frame(Rtsne(bar.table.n, dims = 2, initial_dims = ncol(bar.table.n), verbose=F, 
+                                check_duplicates=F, max_iter = 2500, perplexity=)$Y)
     colnames(tsne.res) <- c("TSNE1","TSNE2")
     rownames(tsne.res) <- rownames(bar.table)
     tsne.res['label'] = final.calls[rownames(tsne.res)]
