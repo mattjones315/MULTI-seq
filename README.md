@@ -8,6 +8,26 @@ MULTI-seq is methodologically analogous to the Cell Hashing (Stoeckius et al., 2
 If you want try out MULTI-seq reagents (for free!), fill out [this form](https://docs.google.com/forms/d/1bAzXFEvDEJse_cMvSUe_yDaPrJpAau4IPx8m5pauj3w/edit?ts=5c47a897) and send us an email (chris.mcginnis@ucsf[dot]edu; david.patterson@ucsf[dot]edu). MULTI-seq interfaces with any droplet microlfuidics-based scRNA-seq methodology (e.g., 10X Genomics, Drop-Seq, In-Drop, Seq-Well, etc.), and is also compatible with single-nucleus RNA-sequnencing. MULTI-seq can also be used simultaneously with CITE-seq/REAP-seq/Total-seq for single-cell proteomics. We currently supply 'kits' for 12, 24, and 96 samples, and can provide guidance about how to order sample barcode plates from IDT for users planning higher-plex experiments. Notably, customized sample barcodes can be ordered from IDT enabling MULTI-seq application for 5' sequencing (10X Genomics) and potentially other, yet-untested assays (e.g., scATAC-seq, scDNA-seq, immune-profiling, etc.).
 
 ## Updates
+Version 1.0.3 (10/10/19):
+* Wrapped up code into a master analyze function,  `analyze_multi_sample`. You can easily use this function to perform pre-processing, alignment, and iterative cell classfiication (quantile sweeps, optima finding, and classification) until no negative cells remain. An example call is here:
+
+```R
+bar.ref <- load("/path/to/BClist.Robj")
+cell.id.vec <- load("/path/to/cell.id.vec.Robj")
+
+R1 = '/path/to/R1'
+R2 = '/path/to/R2'
+
+# set parameters for extracting cell, umi, and multi tag pre-processing of fastqs
+cell.pos = c(1,16) 
+umi.pos = c(17,26)
+tag.pos = c(1,8)
+
+# you can set write=F if you'd rather not write out the final.calls to text
+final.calls = analyze_multi_sample(bar.ref, cell.id.vec, R1, R2, cell.pos = cell.pos, umi.pos = umi.pos, 
+                                    tag.pos = tag.pos, exp.name = "ex_multi_assignment")
+```
+
 Version 1.0.2 (05/09/2019):
 * Replaced 'chemistry' argument in 'MULTIseq.preProcess' and 'MULTIseq.preProcess_allCells' with 'cell', 'umi', and 'tag' arguments for more flexible read parsing (per the suggestion from @omansn). Each argument takes a length-2 numerical vector specifying the beginning and ending positions of the cell barcode (e.g., cell=c(1,16) for 10X), UMI (e.g., umi=c(17,28) for 10X V3 chemistry), and sample tag (e.g., tag=c(1,8) for MULTI-seq). Note: CellID and UMI sequences are assumed to be on R1, while sample tag sequences are assumed to be on R2.
 
