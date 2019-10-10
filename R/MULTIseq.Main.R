@@ -70,7 +70,7 @@ analyze_multi_sample <- function(bar.ref, cell.id.vec, R1, R2, cell.pos = c(1,16
     final.calls = perform_classification(bar.table)
 
     if (write) { 
-        write.table(final.call, paste0(exp.name, '.txt'), sep='\t')
+        write.table(final.calls, paste0(exp.name, '.txt'), sep='\t')
     }
 
     message("Producing tSNE projection")
