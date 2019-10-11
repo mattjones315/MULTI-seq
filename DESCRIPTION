@@ -10,10 +10,10 @@ License: CC-0
 Encoding: UTF-8
 LazyData: true
 Imports:
-    stringdist,
-    ShortRead,
-    KernSmooth,
-    reshape2,
-    Rtsne
+        stringdist, 
+        ShortRead, 
+        KernSmooth, 
+        reshape2, 
+        Rtsne 
 Suggests:
-    ggplot2
+        ggplot2
