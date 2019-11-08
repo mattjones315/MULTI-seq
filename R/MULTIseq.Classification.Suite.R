@@ -59,9 +59,13 @@ classifyCells <- function(barTable, q) {
     cell_i <- which(barTable.n[,i] >= thresh)
     n <- length(cell_i)
     if (n == 0) { next } # Skip to next barcode if no cells classified
+    
     bc_calls[cell_i] <- sapply(bc_calls[cell_i],
                                FUN = function(x) {
-                                 if (x == "Negative") {
+                                # if (is.na(x)) {
+                                #   return(colnames(barTable.n)[i])
+                                # } else 
+                                if (x == "Negative") {
                                    return(colnames(barTable.n)[i])
                                  } else {
                                    return("Doublet")

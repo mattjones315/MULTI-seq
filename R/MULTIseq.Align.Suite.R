@@ -4,7 +4,7 @@
 ## 'read.table' must be pre-subsetted to include only cell barcode reads present in cellIDs                                  ##
 ## 'cellIDs' is a vector of sequenced cellIDs desired for alignment; 'ref' is a vector of reference sample barcode sequences ##                                                    ##
 ###############################################################################################################################
-MULTIseq.align <- function(readTable, cellIDs, ref) {
+MULTIseq.align <- function(readTable, cellIDs, ref, n_threads = 10) {
 
   ## Bucket cell IDs
   print("Bucketing cell IDs...")
@@ -38,7 +38,7 @@ MULTIseq.align <- function(readTable, cellIDs, ref) {
       bar.table[cell, "nUMI_total"] <- length(umis)
 
       ## Find tags with HD <= 1 from any reference tag
-      tag.dists <- stringdistmatrix(a=tags, b=ref)
+      tag.dists <- stringdistmatrix(a=tags, b=ref, nthread=n_threads)
 
       tag.hds <- apply(tag.dists, 1, min)
       tag.ind <- which(tag.hds <= 1)
@@ -85,7 +85,7 @@ MULTIseq.align <- function(readTable, cellIDs, ref) {
 ## 'read.table' must be pre-subsetted to include only cell barcode reads present in cellIDs                                     ##
 ## 'cellIDs' is a vector of sequenced cellIDs desired for alignment; 'ref' is a vector of reference sample barcode sequences    ##                                                    ##
 ##################################################################################################################################
-MULTIseq.align_BD <- function(readTable, cellIDs, ref) {
+MULTIseq.align_BD <- function(readTable, cellIDs, ref, n_threads = 10) {
 
   ## Bucket cell IDs
   print("Bucketing cell IDs...")
@@ -119,7 +119,7 @@ MULTIseq.align_BD <- function(readTable, cellIDs, ref) {
       bar.table[cell, "nUMI_total"] <- length(umis)
 
       ## Find tags with HD <= 5 from any reference tag
-      tag.dists <- stringdistmatrix(a=tags, b=ref)
+      tag.dists <- stringdistmatrix(a=tags, b=ref, nthread = n_threads)
 
       tag.hds <- apply(tag.dists, 1, min)
       tag.ind <- which(tag.hds <= 5)
@@ -289,7 +289,7 @@ MULTIseq.preProcess_allCells <- function(R1, R2, whitelist, cell=c(1,16), umi=c(
 ##############################################################################
 ## 'alignRate' computes the proportion of reads that align to the reference ##
 ##############################################################################
-alignRate <- function(readTable, cellIDs, ref) {
+alignRate <- function(readTable, cellIDs, ref, n_threads = 10) {
 
   print("Subsetting readTable...")
   ind <- which(readTable$Cell %in% cellIDs)
@@ -308,7 +308,7 @@ alignRate <- function(readTable, cellIDs, ref) {
     tags <- readTable$Sample[r1.ind]
 
     ## Compute HD for all tags relative to reference
-    tag.dists <- stringdistmatrix(a=tags, b=ref)
+    tag.dists <- stringdistmatrix(a=tags, b=ref, nthread = n_threads)
 
     ## Find rate at which reads align to reference
     tag.hds <- apply(tag.dists, 1, min)

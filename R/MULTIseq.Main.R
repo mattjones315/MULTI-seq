@@ -23,6 +23,7 @@ perform_sweep <- function(bar.table, plot=F) {
 
 perform_classification <- function(bar.table) {
     
+    print('performing classification round')
     qthresh = perform_sweep(bar.table, plot=F)
     round.calls <- classifyCells(bar.table, q=findQ(qthresh$res, qthresh$extrema))
     neg.cells <- names(round.calls)[which(round.calls == "Negative")]
@@ -32,14 +33,14 @@ perform_classification <- function(bar.table) {
     all.neg.cells = neg.cells
     
     while (length(neg.cells) > 0) {
-        
+        print('performing classification')
         qthresh = perform_sweep(bar.table, plot=F)
         round.calls <- classifyCells(bar.table, q=findQ(qthresh$res, qthresh$extrema))
         neg.cells <- names(round.calls)[which(round.calls == "Negative")]
+        all.neg.cells = c(all.neg.cells, neg.cells)
         if (length(neg.cells) > 0) {
             bar.table = bar.table[-which(rownames(bar.table) %in% neg.cells), ]
         }
-        all.neg.cells = c(all.neg.cells, neg.cells)
         
     }
     
@@ -50,7 +51,7 @@ perform_classification <- function(bar.table) {
 }
 
 analyze_multi_sample <- function(bar.ref, cell.id.vec, R1, R2, cell.pos = c(1,16), umi.pos = c(17,26), 
-                                    tag.pos = c(1,8), exp.name = NA, write=TRUE) {
+                                    tag.pos = c(1,8), exp.name = NA, write=TRUE, good.bars = NULL, n_threads = 10) {
     
     if (is.na(exp.name)) {
         warning("You didn't specify an experiment name, automatically setting this to the default: 'multi_analysis' ")
@@ -62,10 +63,23 @@ analyze_multi_sample <- function(bar.ref, cell.id.vec, R1, R2, cell.pos = c(1,16
     readTable <- MULTIseq.preProcess(R1 = R1, R2 = R2, cellIDs = cell.id.vec, cell=cell.pos, umi=umi.pos, tag=tag.pos)
 
     message("Aligning...")
-    bar.table <- MULTIseq.align(readTable, cell.id.vec, bar.ref)
+    bar.table <- MULTIseq.align(readTable, cell.id.vec, bar.ref, n_threads = n_threads)
     colnames(bar.table) = bar.ref
     rownames(bar.table) = cell.id.vec
-    
+   
+    bad.cols = which(is.na(colnames(bar.table)))
+    bar.table = bar.table[,-bad.cols]
+
+    if (!is.null(good.bars)) { 
+    	bar.table = bar.table[,good.bars]
+	}
+
+	print(dim(bar.table))
+	print(head(bar.table))
+
+    if (write) { 
+        write.table(bar.table, paste0(exp.name, '.bartable.txt'), sep='\t')
+    }
     message("Classifying cells...")
     final.calls = perform_classification(bar.table)
 
@@ -74,8 +88,8 @@ analyze_multi_sample <- function(bar.ref, cell.id.vec, R1, R2, cell.pos = c(1,16
     }
 
     message("Producing tSNE projection")
-    bar.table.n = bar.table[,1:96]
-    bar.table.n = apply(bar.table.n, c(1,2), log1p)
+    # bar.table.n = bar.table[,1:96]
+    bar.table.n = apply(bar.table, c(1,2), log1p)
 
     tsne.res = as.data.frame(Rtsne(bar.table.n, dims = 2, initial_dims = ncol(bar.table.n), verbose=F, 
                                 check_duplicates=F, max_iter = 2500, perplexity=)$Y)
